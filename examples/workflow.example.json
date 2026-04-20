@@ -1,0 +1,16 @@
+{
+  "papers": [
+    "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p3864r1.html"
+  ],
+  "claude_code": {
+    "api_key": "",
+    "auth_token": "sk-or-v1-* ",
+    "base_url": "https://openrouter.ai/api"
+  },
+  "cursor": {
+    "api_key": "crsr_*"
+  },
+  "model_tier": 3,
+  "callback_url": null,
+  "callback_auth_token": null
+}

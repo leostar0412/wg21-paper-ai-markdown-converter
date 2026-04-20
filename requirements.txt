@@ -1,0 +1,7 @@
+# Prefer: uv sync --all-extras  (see pyproject.toml and README.md)
+PyYAML>=6.0
+python-dotenv>=1.0.0
+requests>=2.28.0
+pydantic>=2.0
+lxml>=5.0
+pypandoc>=1.13

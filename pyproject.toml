@@ -1,0 +1,42 @@
+[project]
+name = "wg21-paper-converter-tools-pre"
+version = "0.1.0"
+description = "WG21 paper URL ingestion, Markdown conversion, and Claude Code / Cursor skill workflows"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "PyYAML>=6.0",
+  "python-dotenv>=1.0.0",
+  "requests>=2.28.0",
+  "pydantic>=2.0",
+  "lxml>=5.0",
+  "pypandoc>=1.13",
+]
+
+[project.optional-dependencies]
+convert = [
+  "docling>=2.0",
+  "pdfplumber>=0.11",
+  "pymupdf>=1.24",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+run-prompt = "run_prompt:main"
+url2md = "url2md:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["run_prompt", "url2md", "download_papers"]
+
+[tool.setuptools.packages.find]
+include = ["paper_tools*"]
+
+# External/USB volumes: hardlinks/symlinks often break; copy avoids many install failures.
+[tool.uv]
+link-mode = "copy"

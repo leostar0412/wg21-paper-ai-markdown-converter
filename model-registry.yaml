@@ -1,0 +1,53 @@
+# Model Tier Registry (aligned with pragma-agent)
+# Skills may use model_tier: tier_2 instead of hardcoding model names.
+
+tiers:
+  tier_1:
+    name: "Frontier reasoning"
+    intelligence: 10
+    cost: high
+    models:
+      claude-code:
+        - claude-opus-4-6
+        - x-ai/grok-4
+      cursor:
+        - composer-2
+        - gpt-5.4-xhigh
+    aliases: [opus, frontier, reasoning]
+
+  tier_2:
+    name: "Capable"
+    intelligence: 8
+    cost: medium
+    models:
+      claude-code:
+        - claude-sonnet-4-6
+        - x-ai/grok-4
+      cursor:
+        - gemini-3.1-pro
+        - gpt-5.4-medium
+    aliases: [capable, balanced]
+
+  tier_3:
+    name: "Fast"
+    intelligence: 6
+    cost: low
+    models:
+      claude-code:
+        - claude-haiku-4-5
+      cursor:
+        - auto
+    aliases: [haiku, fast]
+
+  tier_4:
+    name: "Lightweight"
+    intelligence: 4
+    cost: minimal
+    models:
+      claude-code:
+        - x-ai/grok-4.1-fast
+        - gemini-3-flash
+      cursor:
+        - gemini-3-flash
+        - auto
+    aliases: [flash, light, minimal]

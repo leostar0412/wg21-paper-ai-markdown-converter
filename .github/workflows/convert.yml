@@ -1,0 +1,62 @@
+name: Paper ingestion (URL to Markdown)
+
+on:
+  workflow_dispatch:
+    inputs:
+      workflow_config_json:
+        description: >
+          Full workflow JSON (papers, claude_code, cursor, model_tier, optional callback_url).
+        required: true
+        type: string
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y pandoc
+
+      - name: Sync Python environment
+        run: uv sync --all-extras
+        working-directory: ${{ github.workspace }}
+
+      - name: Run url2md
+        id: run
+        env:
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          WORKFLOW_CONFIG_JSON: ${{ inputs.workflow_config_json }}
+        run: |
+          printf '%s\n' "$WORKFLOW_CONFIG_JSON" > /tmp/workflow_config.json
+          uv run python url2md.py \
+            --config-file /tmp/workflow_config.json \
+            --repo-root "${{ github.workspace }}" \
+            -v
+        working-directory: ${{ github.workspace }}
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-ingestion-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            temp/ingestion_run_*/result.json
+            temp/ingestion_run_*/logs.json
+            temp/ingestion_run_*/outputs/bundle.zip
+          if-no-files-found: warn
+          retention-days: 90

@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+._*
+paper_tools_run_log.json
+paper_download_log.json
+# Legacy: runs created before temp/ was the default
+ingestion_run_*/
+# Default workflow output (see paper_tools/workflow/orchestrator.py)
+temp/*
+!temp/.gitkeep
+
+.env
