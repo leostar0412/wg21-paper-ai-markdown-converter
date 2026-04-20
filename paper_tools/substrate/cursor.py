@@ -47,16 +47,37 @@ class CursorSubstrate(AgentSubstrate):
     def __init__(
         self, cli_path: str | None = None, api_key: str | None = None
     ):
-        self._cli = cli_path or self._detect_cli()
+        self._cli = self._resolve_cli(cli_path)
         self._api_key = api_key or os.environ.get("CURSOR_API_KEY", "")
 
     @staticmethod
-    def _detect_cli() -> str:
-        """Find the Cursor CLI binary (agent or cursor)."""
+    def _resolve_cli(cli_path: str | None) -> str:
+        """Resolve executable: explicit arg, then ``CURSOR_CODE_BIN``, then PATH."""
+        for raw in (
+            (cli_path or "").strip(),
+            (os.environ.get("CURSOR_CODE_BIN") or "").strip(),
+        ):
+            if not raw:
+                continue
+            p = Path(raw).expanduser()
+            if p.is_file() and os.access(p, os.X_OK):
+                return str(p.resolve())
+            w = shutil.which(raw)
+            if w:
+                return w
+            raise FileNotFoundError(
+                f"Cursor CLI not found at {raw!r} (set a valid path or install the CLI; "
+                "see https://cursor.com/docs/cli )."
+            )
         for name in ("agent", "cursor"):
-            if shutil.which(name):
-                return name
-        return "agent"
+            w = shutil.which(name)
+            if w:
+                return w
+        raise FileNotFoundError(
+            "Cursor CLI not found: expected `agent` or `cursor` on PATH, or set "
+            "`CURSOR_CODE_BIN`. Install: https://cursor.com/docs/cli "
+            "(CI: curl https://cursor.com/install -fsS | bash; add ~/.cursor/bin to PATH)."
+        )
 
     async def health_check(self) -> bool:
         try:

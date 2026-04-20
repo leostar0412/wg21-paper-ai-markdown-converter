@@ -30,6 +30,12 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y pandoc
 
+      # Required when workflow JSON uses cursor.api_key (reviewer invokes `agent`).
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+
       - name: Sync Python environment
         run: uv sync --all-extras
         working-directory: ${{ github.workspace }}
