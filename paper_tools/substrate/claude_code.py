@@ -93,18 +93,45 @@ def _write_mcp_config(mcp_servers: list, path: Path) -> None:
     path.write_text(json.dumps(config, indent=2), encoding="utf-8")
 
 
+def _resolve_claude_cli(cli_path: str | None) -> str:
+    """Resolve executable: explicit arg, then ``CLAUDE_CODE_BIN``, then ``claude`` on PATH."""
+    for raw in (
+        (cli_path or "").strip(),
+        (os.environ.get("CLAUDE_CODE_BIN") or "").strip(),
+    ):
+        if not raw:
+            continue
+        p = Path(raw).expanduser()
+        if p.is_file() and os.access(p, os.X_OK):
+            return str(p.resolve())
+        w = shutil.which(raw)
+        if w:
+            return w
+        raise FileNotFoundError(
+            f"Claude Code CLI not found at {raw!r}. Install: "
+            "https://docs.anthropic.com/en/docs/claude-code — or set CLAUDE_CODE_BIN."
+        )
+    w = shutil.which("claude")
+    if w:
+        return w
+    raise FileNotFoundError(
+        "Claude Code CLI not found: expected `claude` on PATH or set CLAUDE_CODE_BIN "
+        "(CI: npm install -g @anthropic-ai/claude-code; add $(npm prefix -g)/bin to PATH)."
+    )
+
+
 class ClaudeCodeSubstrate(AgentSubstrate):
     """Substrate wrapping the Claude Code CLI (`claude`)."""
 
     def __init__(
         self,
-        cli_path: str = "claude",
+        cli_path: str | None = None,
         api_key: str | None = None,
         auth_token: str | None = None,
         base_url: str | None = None,
         permission_mode: str | None = None,
     ):
-        self._cli = cli_path
+        self._cli = _resolve_claude_cli(cli_path)
         self._api_key = api_key if api_key is not None else os.environ.get("ANTHROPIC_API_KEY", "")
         self._auth_token = auth_token or os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
         self._base_url = base_url or os.environ.get("ANTHROPIC_BASE_URL")

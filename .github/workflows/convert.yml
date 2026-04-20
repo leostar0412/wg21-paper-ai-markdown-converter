@@ -30,6 +30,17 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y pandoc
 
+      # Required when workflow JSON uses claude_code (author invokes `claude`).
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code CLI
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          echo "$(npm prefix -g)/bin" >> "$GITHUB_PATH"
+
       # Required when workflow JSON uses cursor.api_key (reviewer invokes `agent`).
       - name: Install Cursor CLI
         run: |
