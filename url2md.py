@@ -112,8 +112,14 @@ async def _async_main(args: argparse.Namespace) -> int:
         )
         post_callback(str(cfg.callback_url), cb_payload, auth_token=token)
 
-    print(json.dumps(result_payload, indent=2, ensure_ascii=False))
-    print(f"\nRun directory: {run_root}", file=sys.stderr)
+    if args.quiet:
+        print(
+            f"run_status={result_payload.get('run_status')} run_dir={run_root}",
+            file=sys.stderr,
+        )
+    else:
+        print(json.dumps(result_payload, indent=2, ensure_ascii=False))
+        print(f"\nRun directory: {run_root}", file=sys.stderr)
     return 0 if ok else 1
 
 
@@ -151,12 +157,24 @@ def main() -> None:
     parser.add_argument("--env-file", type=Path, default=None)
     parser.add_argument("--env-override", action="store_true")
     parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Minimal stderr logging (warnings/errors only) and no result JSON on stdout.",
+    )
     args = parser.parse_args()
 
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(levelname)s %(message)s",
+    if args.verbose and args.quiet:
+        parser.error("cannot combine --verbose and --quiet")
+    log_level = (
+        logging.DEBUG
+        if args.verbose
+        else logging.WARNING
+        if args.quiet
+        else logging.INFO
     )
+    logging.basicConfig(level=log_level, format="%(levelname)s %(message)s")
     _bootstrap_env_from_file(args.env_file, override=args.env_override)
 
     raise SystemExit(asyncio.run(_async_main(args)))

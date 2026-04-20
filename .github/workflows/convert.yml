@@ -59,11 +59,16 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           WORKFLOW_CONFIG_JSON: ${{ inputs.workflow_config_json }}
         run: |
-          printf '%s\n' "$WORKFLOW_CONFIG_JSON" > /tmp/workflow_config.json
+          python3 << 'PY'
+          import os, pathlib
+          pathlib.Path("/tmp/workflow_config.json").write_text(
+              os.environ["WORKFLOW_CONFIG_JSON"], encoding="utf-8"
+          )
+          PY
           uv run python url2md.py \
             --config-file /tmp/workflow_config.json \
             --repo-root "${{ github.workspace }}" \
-            -v
+            --quiet
         working-directory: ${{ github.workspace }}
 
       - name: Upload artifacts
